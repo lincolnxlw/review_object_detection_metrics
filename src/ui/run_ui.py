@@ -9,6 +9,7 @@ from src.ui.details import Details_Dialog
 from src.ui.main_ui import Ui_Dialog as Main_UI
 from src.ui.results import Results_Dialog
 from src.utils.enumerators import BBFormat, BBType, CoordinatesType
+import json
 
 
 class Main_Dialog(QMainWindow, Main_UI):
@@ -70,10 +71,10 @@ class Main_Dialog(QMainWindow, Main_UI):
         elif self.rad_gt_format_abs_values_text.isChecked():
             ret = converter.text2bb(self.dir_annotations_gt, bb_type=BBType.GROUND_TRUTH)
         elif self.rad_gt_format_yolo_text.isChecked():
-            ret = self.yolo2bb(self.dir_annotations_gt,
-                               self.dir_images_gt,
-                               self.filepath_classes_gt,
-                               bb_type=BBType.GROUND_TRUTH)
+            ret = converter.yolo2bb(self.dir_annotations_gt,
+                                    self.dir_images_gt,
+                                    self.filepath_classes_gt,
+                                    bb_type=BBType.GROUND_TRUTH)
         # Make all types as GT
         [bb.set_bb_type(BBType.GROUND_TRUTH) for bb in ret]
         return ret
@@ -372,4 +373,18 @@ class Main_Dialog(QMainWindow, Main_UI):
                             buttons=QMessageBox.Ok,
                             icon=QMessageBox.Information)
         else:
+            with open(self.dir_save_results + '/metrics.json', 'w') as metric_file:
+                data = {}
+                data['pascal-voc'] = []
+                data['coco'] = []
+                data['coco'].append({
+                    'AP50': str(coco_res['AP50']),
+                    'AP75': str(coco_res['AP75'])
+                })
+                data['pascal-voc'].append({
+                    'IOU': str(iou_threshold),
+                    'mAP': str(pascal_res['mAP'])
+                })
+                json.dump(data, metric_file)
+
             self.dialog_results.show_dialog(coco_res, pascal_res, self.dir_save_results)
