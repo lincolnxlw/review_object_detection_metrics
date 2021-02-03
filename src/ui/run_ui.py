@@ -382,7 +382,14 @@ class Main_Dialog(QMainWindow, Main_UI):
                     'AP75': str(coco_res['AP75'])
                 })
                 data['pascal-voc'].append({
-                    'IOU': str(iou_threshold),
+                    'IOU': str(iou_threshold)
+                })
+                for class_name in pascal_res['per_class']:
+                    key_name = class_name + '_AP'
+                    data['pascal-voc'].append({
+                        key_name: str(pascal_res['per_class'][class_name]['AP'])
+                    })
+                data['pascal-voc'].append({
                     'mAP': str(pascal_res['mAP'])
                 })
                 json.dump(data, metric_file)
